@@ -1,0 +1,13 @@
+### TQE LAW (row 9)
+
+E8: G1
+F8: G2
+G8: G3
+H8: Residual R
+
+E9 = B9 - (B2*C9 + B3*D9)
+F9 = C9 - (B4*D9 - B5/B9)
+G9 = D9 - (B9 + C9 + B6)
+H9 = SQRT(E9^2 + F9^2 + G9^2)
+
+### Copy row 9 → row 10
