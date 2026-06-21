@@ -1,0 +1,9 @@
+class NaturalLanguageTamaEngine:
+    def __init__(self):
+        self.core = TamaQuantitativeBreakdownEngine()
+
+    def evaluate_hypothesis(self, hypothesis: str, threshold=1e-6):
+        params = encode_hypothesis_to_tama_params(hypothesis)
+        result = self.core.run(params, threshold=threshold)
+        result["hypothesis"] = hypothesis
+        return result
