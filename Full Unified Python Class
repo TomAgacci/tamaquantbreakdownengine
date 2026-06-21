@@ -1,0 +1,148 @@
+import math
+import numpy as np
+from dataclasses import dataclass, asdict
+
+@dataclass
+class TamaParams:
+    A: float
+    B: float
+    C: float
+
+class TamaQuantitativeBreakdownEngine:
+
+    # ---------------------------------------------------------
+    # 1. Tama Prime Fixed-Point Solver
+    # ---------------------------------------------------------
+    def solve_tama(self, params: TamaParams):
+        A, B, C = params.A, params.B, params.C
+        a = 1 + A
+        b = -A * C
+        c = B
+
+        disc = b*b - 4*a*c
+        if disc < 0:
+            return None
+
+        sqrtD = math.sqrt(disc)
+        x1 = (-b + sqrtD) / (2*a)
+        x2 = (-b - sqrtD) / (2*a)
+        y1 = C - x1
+        y2 = C - x2
+        z1 = x1 * y1
+        z2 = x2 * y2
+
+        return {
+            "disc": disc,
+            "roots": [
+                {"x": x1, "y": y1, "z": z1},
+                {"x": x2, "y": y2, "z": z2}
+            ]
+        }
+
+    # ---------------------------------------------------------
+    # 2. Scientific-Method Falsification
+    # ---------------------------------------------------------
+    def falsification(self, A, B, C, x, y, eps=1e-3, delta=1e-3):
+        def T(x, y):
+            return (A*y - B/x) + (C - x)
+        R = abs(T(x + eps, y + delta))
+        return R
+
+    # ---------------------------------------------------------
+    # 3. Harmonic Layer (3D Laplacian)
+    # ---------------------------------------------------------
+    def harmonic(self, x, y, z):
+        f = np.array([x, y, z], float)
+        W = np.ones((3,3)) - np.eye(3)
+        D = np.diag(np.sum(W, axis=1))
+        L = D - W
+        H = -L
+        vals, vecs = np.linalg.eigh(H)
+        f_hat = vecs.T @ f
+        return vals, vecs, f_hat
+
+    # ---------------------------------------------------------
+    # 4. Curvature + Field Flow
+    # ---------------------------------------------------------
+    def field_flow(self, f_hat0, alpha=0.1, eta=0.05, steps=50):
+        f_hat = f_hat0.copy()
+        traj = [f_hat.copy()]
+        for _ in range(steps):
+            C_f = f_hat + 2*alpha*(f_hat**3)
+            f_hat = f_hat - eta*C_f
+            traj.append(f_hat.copy())
+        return np.array(traj)
+
+    # ---------------------------------------------------------
+    # 5. Heidegger Checks
+    # ---------------------------------------------------------
+    def heidegger_checks(self, x, y):
+        E_eth  = math.exp(-abs(y))
+        E_caus = math.exp(-abs(x))
+        E_temp = math.exp(-abs(x - y))
+        E_tot  = (E_eth + E_caus + E_temp) / 3
+        return {
+            "ethics": E_eth,
+            "causality": E_caus,
+            "temporal": E_temp,
+            "total": E_tot
+        }
+
+    # ---------------------------------------------------------
+    # 6. Absolute Outcome Table
+    # ---------------------------------------------------------
+    def run(self, params: TamaParams, threshold=1e-6):
+
+        tama = self.solve_tama(params)
+        if tama is None:
+            return {"error": "No real roots"}
+
+        A, B, C = params.A, params.B, params.C
+        results = []
+
+        for root in tama["roots"]:
+            x, y, z = root["x"], root["y"], root["z"]
+
+            # Scientific falsification
+            R = self.falsification(A, B, C, x, y)
+            accepted = R <= threshold
+
+            # Harmonic layer
+            vals, vecs, f_hat = self.harmonic(x, y, z)
+
+            # Field flow
+            traj = self.field_flow(f_hat)
+            f_hat_final = traj[-1]
+            f_final = vecs @ f_hat_final
+            xT, yT, zT = f_final.tolist()
+
+            # Heidegger checks
+            H = self.heidegger_checks(xT, yT)
+
+            results.append({
+                "root": {"x": x, "y": y, "z": z},
+                "residual": R,
+                "accepted": accepted,
+                "harmonic": {
+                    "eigenvalues": vals.tolist(),
+                    "eigenvectors": vecs.tolist(),
+                    "initial_hat": f_hat.tolist(),
+                    "final_hat": f_hat_final.tolist()
+                },
+                "field_final_state": {"x": xT, "y": yT, "z": zT},
+                "heidegger": H
+            })
+
+        # Choose absolute outcome
+        accepted_roots = [r for r in results if r["accepted"]]
+        if not accepted_roots:
+            absolute = None
+        else:
+            absolute = max(accepted_roots, key=lambda r: r["heidegger"]["total"])
+
+        return {
+            "params": asdict(params),
+            "discriminant": tama["disc"],
+            "roots": results,
+            "absolute_outcome": absolute
+        }
