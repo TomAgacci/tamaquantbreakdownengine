@@ -1,0 +1,11 @@
+import math
+
+def triadic_quantitative_engine(a=1,b=0,c=0,d=18,e=10):
+    results = []
+    for x in [9,1]:
+        y = 20 - x
+        z = x + y + e
+        results.append({"x":x,"y":y,"z":z})
+    return results
+
+print(triadic_quantitative_engine())
