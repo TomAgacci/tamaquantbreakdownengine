@@ -1,0 +1,9 @@
+### Harmonic coordinates for row 9
+A30: f_hat1
+B30 = B24*B9 + B25*C9 + B26*D9
+
+A31: f_hat2
+B31 = C24*B9 + C25*C9 + C26*D9
+
+A32: f_hat3
+B32 = D24*B9 + D25*C9 + D26*D9
