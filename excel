@@ -1,0 +1,125 @@
+Excel engine
+Assume cells:
+
+A1 = parameter A
+
+B1 = parameter B
+
+C1 = parameter C
+
+Define coefficients of the Tama quadratic 
+(
+1
++
+𝐴
+)
+𝑥
+2
+−
+𝐴
+𝐶
+𝑥
++
+𝐵
+=
+0
+:
+
+D1 (a) = =1 + A1
+
+E1 (b) = =-A1 * C1
+
+F1 (c) = =B1
+
+Discriminant:
+
+G1 (disc) = =E1^2 - 4*D1*F1
+
+Roots 
+𝑥
+1
+,
+𝑥
+2
+:
+
+H1 (x1) = =(-E1 + SQRT(G1)) / (2*D1)
+
+I1 (x2) = =(-E1 - SQRT(G1)) / (2*D1)
+
+Corresponding 
+𝑦
+1
+,
+𝑦
+2
+ via 
+𝑦
+=
+𝐶
+−
+𝑥
+:
+
+J1 (y1) = =C1 - H1
+
+K1 (y2) = =C1 - I1
+
+Invariants 
+𝑧
+1
+,
+𝑧
+2
+=
+𝑥
+𝑦
+:
+
+L1 (z1) = =H1 * J1
+
+M1 (z2) = =I1 * K1
+
+Example for 
+(
+𝑥
+,
+𝑦
+)
+=
+(
+9
+,
+1
+)
+,
+(
+1
+,
+9
+)
+:
+
+Set A1 = 1, B1 = 18, C1 = 20.
+
+The sheet will return 
+𝑥
+1
+=
+9
+,
+𝑦
+1
+=
+1
+ and 
+𝑥
+2
+=
+1
+,
+𝑦
+2
+=
+9
+.
