@@ -6,3 +6,8 @@ B91 = (O9 <= 0.000001)
 
 A92: Absolute Outcome?
 B92 = IF(B91, B90, -1E9)
+
+//Do this for both roots (row 9 and row 10), then:
+
+A100: Absolute Root
+B100 = IF(B92 > B102, "Root 1", "Root 2")
