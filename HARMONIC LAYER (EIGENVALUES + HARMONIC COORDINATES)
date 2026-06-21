@@ -1,0 +1,17 @@
+### Eigenvalues (fixed)
+A20: Eigenvalue 1   B20: 0
+A21: Eigenvalue 2   B21: -3
+A22: Eigenvalue 3   B22: -3
+
+### Eigenvectors (fixed)
+A24: U11   B24: =1/SQRT(3)
+A25: U21   B25: =1/SQRT(3)
+A26: U31   B26: =1/SQRT(3)
+
+C24: U12   C24: =1/SQRT(2)
+C25: U22   C25: =-1/SQRT(2)
+C26: U32   C26: =0
+
+D24: U13   D24: =1/SQRT(6)
+D25: U23   D25: =1/SQRT(6)
+D26: U33   D26: =-2/SQRT(6)
