@@ -1,0 +1,54 @@
+import math
+from dataclasses import dataclass
+
+@dataclass
+class TamaParams:
+    A: float
+    B: float
+    C: float
+
+@dataclass
+class ScientificOutcome:
+    x: float | None
+    y: float | None
+    z: float | None
+    residual: float
+    accepted: bool
+    discriminant: float
+
+def tama_scientific_engine(params: TamaParams,
+                           epsilon=1e-3,
+                           delta=1e-3,
+                           threshold=1e-6):
+
+    A, B, C = params.A, params.B, params.C
+
+    # Tama quadratic coefficients
+    a = 1 + A
+    b = -A * C
+    c = B
+
+    # Discriminant
+    D = b*b - 4*a*c
+    if D < 0:
+        return ScientificOutcome(None, None, None, None, False, D)
+
+    sqrtD = math.sqrt(D)
+    x1 = (-b + sqrtD) / (2*a)
+    y1 = C - x1
+
+    # Experimental perturbation
+    x_exp = x1 + epsilon
+    y_exp = y1 + delta
+
+    # Tama operator
+    def T(x, y):
+        return (A*y - B/x) + (C - x)
+
+    # Residual (falsification test)
+    R = abs(T(x_exp, y_exp))
+
+    accepted = R <= threshold
+    z1 = x1 * y1
+
+    return ScientificOutcome(x1, y1, z1, R, accepted, D)
