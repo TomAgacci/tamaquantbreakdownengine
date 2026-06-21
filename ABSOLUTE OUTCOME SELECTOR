@@ -1,0 +1,8 @@
+A90: Score
+B90 = EXP(-ABS(B81)) + EXP(-ABS(B80)) + EXP(-ABS(B80-B81))
+
+A91: Accepted?
+B91 = (O9 <= 0.000001)
+
+A92: Absolute Outcome?
+B92 = IF(B91, B90, -1E9)
