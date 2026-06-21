@@ -1,0 +1,94 @@
+import math
+import numpy as np
+
+class TriadicQuantitativeEngineSM:
+    def __init__(self, a=1.0, b=0.0, c=0.0, d=18.0, e=10.0,
+                 alpha=0.1, eta=0.05, steps=50):
+        self.a, self.b, self.c, self.d, self.e = a, b, c, d, e
+        self.alpha, self.eta, self.steps = alpha, eta, steps
+
+    # Base triadic states from (9,1) and (1,9), with z = xy = 9
+    def base_states(self):
+        return [
+            {"x": 9.0, "y": 1.0, "z": 9.0},
+            {"x": 1.0, "y": 9.0, "z": 9.0},
+        ]
+
+    # TQE law residual
+    def G(self, x, y, z):
+        a, b, c, d, e = self.a, self.b, self.c, self.d, self.e
+        g1 = x - (a*y + b*z)
+        g2 = y - (c*z - d/x)
+        g3 = z - (x + y + e)
+        return np.array([g1, g2, g3], float)
+
+    def residual(self, x, y, z):
+        return float(np.linalg.norm(self.G(x, y, z)))
+
+    # Harmonic + field flow (same as before)
+    def harmonic(self, x, y, z):
+        f = np.array([x, y, z], float)
+        W = np.ones((3,3)) - np.eye(3)
+        D = np.diag(np.sum(W, axis=1))
+        L = D - W
+        H = -L
+        vals, vecs = np.linalg.eigh(H)
+        f_hat = vecs.T @ f
+        return vals, vecs, f_hat
+
+    def field_flow(self, f_hat0):
+        f_hat = f_hat0.copy()
+        traj = [f_hat.copy()]
+        for _ in range(self.steps):
+            C_f = f_hat + 2*self.alpha*(f_hat**3)
+            f_hat = f_hat - self.eta*C_f
+            traj.append(f_hat.copy())
+        return np.array(traj)
+
+    def heidegger_score(self, x, y):
+        E_eth  = math.exp(-abs(y))
+        E_caus = math.exp(-abs(x))
+        E_temp = math.exp(-abs(x - y))
+        return (E_eth + E_caus + E_temp) / 3.0
+
+    def run(self, eps=1e-3, delta=1e-3, gamma=1e-3, threshold=1e-6):
+        results = []
+        for state in self.base_states():
+            x, y, z = state["x"], state["y"], state["z"]
+
+            # Harmonic + field flow
+            vals, vecs, f_hat0 = self.harmonic(x, y, z)
+            traj = self.field_flow(f_hat0)
+            f_hat_final = traj[-1]
+            f_final = vecs @ f_hat_final
+            xT, yT, zT = f_final.tolist()
+
+            # Scientific-method falsification on evolved state
+            x_p = xT + eps
+            y_p = yT + delta
+            z_p = zT + gamma
+            R = self.residual(x_p, y_p, z_p)
+            accepted = R <= threshold
+
+            # Heidegger score on evolved (xT,yT)
+            score = self.heidegger_score(xT, yT)
+
+            results.append({
+                "initial_state": state,
+                "final_state": {"x": xT, "y": yT, "z": zT},
+                "residual": R,
+                "accepted": accepted,
+                "score": score,
+            })
+
+        # Absolute triadic outcome
+        accepted_states = [r for r in results if r["accepted"]]
+        if accepted_states:
+            absolute = max(accepted_states, key=lambda r: r["score"])
+        else:
+            absolute = None
+
+        return {
+            "results": results,
+            "absolute_outcome": absolute,
+        }
