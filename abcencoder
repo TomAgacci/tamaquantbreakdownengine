@@ -1,0 +1,15 @@
+def encode_hypothesis_to_tama_params(text: str):
+    text = text.strip()
+    if not text:
+        text = "empty hypothesis"
+
+    length = len(text)
+    vowels = sum(ch.lower() in "aeiou" for ch in text)
+    consonants = sum(ch.isalpha() and ch.lower() not in "aeiou" for ch in text)
+
+    # Basic scaling so numbers are in a reasonable range
+    A = max(1.0, vowels / 3.0)
+    B = max(1.0, consonants * 2.0)
+    C = max(5.0, length)
+
+    return TamaParams(A=A, B=B, C=C)
