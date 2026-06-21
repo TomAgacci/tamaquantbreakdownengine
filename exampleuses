@@ -1,0 +1,9 @@
+if __name__ == "__main__":
+    nl_engine = NaturalLanguageTamaEngine()
+
+    hypothesis = "Act aggressively now to get what I want."
+    outcome = nl_engine.evaluate_hypothesis(hypothesis)
+
+    from pprint import pprint
+    pprint(outcome["params"])
+    pprint(outcome["absolute_outcome"])
